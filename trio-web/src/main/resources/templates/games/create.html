@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Créer une partie - Trio')}"></head>
+<body class="trio-ui-theme trio-page trio-create-page">
+
+<main class="trio-shell trio-page-grid">
+<div class="top trio-header">
+    <div class="brand trio-brand">
+        <img class="trio-logo" th:src="@{/images/trio-ui/logo-trio.webp}" alt="Trio"/>
+        <div>
+            <p class="trio-kicker">Nouvelle table</p>
+            <div class="h1">Créer une partie</div>
+            <div class="sub">Choisis la variante et le nombre de joueurs (3 à 6).</div>
+        </div>
+    </div>
+
+    <div class="actions trio-actions">
+        <a class="btn" th:href="@{/games}">← Retour Lobby</a>
+        <a class="btn" th:href="@{/logout}">Déconnexion</a>
+    </div>
+</div>
+
+<div class="card trio-panel trio-form-panel">
+    <form class="form trio-form" th:action="@{/games/create}" th:object="${form}" method="post">
+
+        <div class="field">
+            <label>Variante</label>
+            <select th:field="*{variant}">
+                <option value="" disabled selected>-- Choisir --</option>
+                <option th:each="v : ${variants}" th:value="${v}" th:text="${v}"></option>
+            </select>
+            <div class="error" th:if="${#fields.hasErrors('variant')}" th:errors="*{variant}"></div>
+            <div class="sub trio-field-note">
+                Variante A : 3 trios ou trio de 7 • Variante B : 2 trios liés ou trio de 7
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Nombre de joueurs</label>
+            <input type="number" min="3" max="6" th:field="*{maxPlayers}" placeholder="3 à 6"/>
+            <div class="error" th:if="${#fields.hasErrors('maxPlayers')}" th:errors="*{maxPlayers}"></div>
+            <div class="sub trio-field-note">
+                3 joueurs → 9 cartes/joueur • 4 → 7 • 5 → 6 • 6 → 5 (répartition Trio)
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="trio-checkbox-label">
+                <input type="checkbox" th:field="*{privateGame}"/>
+                Partie privée
+            </label>
+        </div>
+
+        <div class="field">
+            <label>Mot de passe</label>
+            <input type="password" th:field="*{password}" placeholder="Pour jouer avec tes amis"/>
+            <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+        </div>
+
+        <button class="btn primary trio-full-button" type="submit">Créer la partie</button>
+
+        <div class="sub trio-form-footer">
+            Après création, tu seras renvoyé au lobby avec l’ID de la partie.
+        </div>
+    </form>
+</div>
+</main>
+
+</body>
+</html>

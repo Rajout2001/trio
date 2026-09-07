@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Accueil - Trio')}"></head>
+<body class="trio-ui-theme trio-page trio-home-page">
+
+<main class="trio-shell trio-home-shell">
+    <section class="trio-home-hero">
+        <div class="trio-home-title">
+            <img class="trio-logo trio-home-logo" th:src="@{/images/trio-ui/logo-trio.webp}" alt="Trio"/>
+            <div>
+                <p class="trio-kicker">Jeu de cartes en ligne</p>
+                <h1>Trio</h1>
+                <p th:if="${session.PLAYER_PSEUDO != null}" class="trio-home-welcome">
+                    Bienvenue <b th:text="${session.PLAYER_PSEUDO}">joueur</b>
+                </p>
+                <p th:unless="${session.PLAYER_PSEUDO != null}" class="trio-home-welcome">
+                    Forme des trios, lis le jeu des autres, et attention aux mauvaises révélations.
+                </p>
+            </div>
+        </div>
+
+        <div class="trio-home-actions">
+            <a th:if="${session.JWT_TOKEN != null}" class="btn primary" th:href="@{/games}">Jouer</a>
+            <a th:if="${session.JWT_TOKEN != null}" class="btn" th:href="@{/stats}">Statistiques</a>
+            <a th:if="${session.JWT_TOKEN == null}" class="btn primary" th:href="@{/login}">Se connecter</a>
+            <a th:if="${session.JWT_TOKEN == null}" class="btn" th:href="@{/register}">Créer un compte</a>
+        </div>
+    </section>
+
+    <section class="card trio-panel trio-rules-panel">
+        <div class="h2">Règles du jeu</div>
+
+        <div class="trio-rules-grid">
+            <article class="trio-rule-block">
+                <h2>Objectif</h2>
+                <p>
+                    Le but est de récupérer trois cartes de même valeur pour former un trio.
+                    Le trio de 7 fait gagner immédiatement.
+                </p>
+            </article>
+
+            <article class="trio-rule-block">
+                <h2>Joueurs et cartes</h2>
+                <p>
+                    Une partie se joue de 3 à 6 joueurs avec 36 cartes, trois cartes pour chaque valeur de 1 à 12.
+                    Une partie des cartes est en main, le reste est face cachée au centre.
+                </p>
+            </article>
+
+            <article class="trio-rule-block">
+                <h2>Tour de jeu</h2>
+                <p>
+                    A ton tour, tu révèles des cartes une par une. Tu peux choisir une carte du centre,
+                    ou demander la plus petite ou la plus grande carte d'un joueur.
+                </p>
+            </article>
+
+            <article class="trio-rule-block">
+                <h2>Mauvaise carte</h2>
+                <p>
+                    Si une carte révélée n'a pas la même valeur que les précédentes, le tour s'arrête.
+                    Les cartes restent visibles quelques secondes, puis elles sont remises en place.
+                </p>
+            </article>
+        </div>
+
+        <div class="trio-variants">
+            <div>
+                <h2>Variante A</h2>
+                <p>Le premier joueur avec 3 trios gagne, ou immédiatement avec le trio de 7.</p>
+            </div>
+            <div>
+                <h2>Variante B</h2>
+                <p>Le premier joueur avec 2 trios liés gagne, ou immédiatement avec le trio de 7.</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+</body>
+</html>

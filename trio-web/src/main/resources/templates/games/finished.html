@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Parties terminées - Trio')}"></head>
+<body class="trio-ui-theme trio-page trio-finished-page">
+
+<main class="trio-shell trio-page-grid">
+<div class="top trio-header">
+    <div class="brand trio-brand">
+        <img class="trio-logo" th:src="@{/images/trio-ui/logo-trio.webp}" alt="Trio"/>
+        <div>
+            <p class="trio-kicker">Archives</p>
+            <div class="h1">Parties terminées</div>
+            <div class="sub">Toutes les parties terminées</div>
+        </div>
+    </div>
+
+    <div class="actions trio-actions">
+        <a class="btn" th:href="@{/games}">Lobby</a>
+        <a class="btn" th:href="@{/logout}">Déconnexion</a>
+    </div>
+</div>
+
+<div class="card trio-panel">
+    <div class="h2 trio-section-title">Archives</div>
+
+    <div th:if="${#lists.isEmpty(games)}" class="sub trio-empty-state">
+        <img th:src="@{/images/trio-ui/card-back.webp}" alt="Carte Trio"/>
+        Aucune partie terminée pour le moment.
+    </div>
+
+    <div class="trio-table-wrap" th:if="${!#lists.isEmpty(games)}">
+    <table class="table" th:if="${!#lists.isEmpty(games)}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Variante</th>
+            <th>Créateur</th>
+            <th>Joueurs</th>
+            <th>Gagnant</th>
+            <th>Condition</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="g : ${games}">
+            <td th:text="${g.id}">1</td>
+            <td><span class="badge" th:text="${g.variante}">A</span></td>
+            <td th:text="${g.createur}">alice</td>
+            <td th:text="${g.nombreJoueursActuels + ' / ' + g.nombreJoueursMax}">3 / 3</td>
+            <td th:text="${g.gagnant ?: 'Aucun'}">alice</td>
+            <td th:text="${g.conditionVictoire ?: '-'}">TRIO_DE_7</td>
+            <td>
+                <a class="btn primary" th:href="@{/games/{id}(id=${g.id})}">Voir</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+</main>
+
+</body>
+</html>

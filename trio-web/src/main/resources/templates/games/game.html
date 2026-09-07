@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Partie - Trio</title>
+    <link rel="stylesheet" th:href="@{/css/trio.css}">
+    <link rel="stylesheet" th:href="@{/css/trio-ui.css}">
+</head>
+<body class="trio-ui-theme trio-game-page">
+
+<div class="trio-game-shell">
+
+    <!-- Header -->
+    <div class="top trio-header">
+        <div class="brand trio-brand">
+            <img class="trio-logo" th:src="@{/images/trio-ui/logo-trio.webp}" alt="Trio"/>
+            <div>
+                <p class="trio-kicker">Partie en cours</p>
+                <div class="h1">Partie #<span th:text="${partie.id}">1</span></div>
+                <div class="sub">
+                    Variante <b th:text="${partie.variante}">A</b> •
+                    <span th:text="${partie.nombreJoueursActuels + ' / ' + partie.nombreJoueursMax}">1/4</span> joueurs •
+                    <span th:text="${partie.statut}">EN_ATTENTE</span>
+                </div>
+            </div>
+        </div>
+        <div class="actions trio-actions">
+            <a class="btn" th:href="@{/games}">← Lobby</a>
+            <a class="btn" th:href="@{/logout}">Déconnexion</a>
+        </div>
+    </div>
+
+    <!-- EN_ATTENTE -->
+    <div th:if="${partie.statut == 'EN_ATTENTE'}" class="card" style="text-align:center;">
+        <div class="h2" style="margin-bottom:10px;">⏳ En attente de joueurs</div>
+        <div class="sub" style="margin-bottom:18px;">
+            <span th:text="${partie.nombreJoueursActuels}">1</span> /
+            <span th:text="${partie.nombreJoueursMax}">4</span> joueurs inscrits
+            <span th:if="${partie.partiePrivee}"> · Partie privée</span>
+        </div>
+        <div class="trio-centered-actions">
+            <form th:action="@{/games/{id}/join(id=${partie.id})}" method="post"
+                  class="trio-inline-form trio-inline-form--center">
+                <button class="btn" type="submit">Rejoindre la partie</button>
+            </form>
+            <form th:action="@{/games/{id}/start(id=${partie.id})}" method="post">
+                <button class="btn primary" type="submit">🚀 Démarrer la partie</button>
+            </form>
+        </div>
+        <div class="sub" style="margin-top:12px;">
+            Seul le créateur (<b th:text="${partie.createur}"></b>) peut démarrer.
+        </div>
+    </div>
+
+    <!-- EN_COURS -->
+    <div th:if="${partie.statut == 'EN_COURS'}">
+
+        <div class="card trio-turn-card">
+            <div th:if="${distribution != null}">
+                <span style="font-size:15px;">
+                    Tour à : <b th:text="${distribution.joueurCourant}">joueur</b>
+                    <span th:if="${distribution.joueurCourant != null and distribution.joueurCourant == distribution.monPseudo}"
+                          style="color:var(--gold); font-weight:900;"> ← C'EST TON TOUR !</span>
+                </span>
+            </div>
+            <div th:if="${partie.variante == 'B'}" class="trio-variant-b-hint">
+                Variante B : victoire avec 2 trios liés ou directement avec le trio de 7.
+                Les liaisons affichées suivent les chiffres imprimés sur les cartes.
+            </div>
+        </div>
+
+        <div class="trio-table trio-table--v22" th:if="${distribution != null}">
+            <div class="trio-opponents trio-side-top" th:if="${!distribution.adversaires.isEmpty()}">
+                <div th:each="entry, stat : ${distribution.adversaires}"
+                     th:if="${stat.index < 2}"
+                     class="trio-seat"
+                     th:classappend="${entry.key == distribution.joueurCourant} ? ' active'">
+                    <div class="trio-seat-name">
+                        <b th:text="${entry.key}">joueur</b>
+                        <span class="badge" th:text="${entry.value + ' carte(s)'}">n</span>
+                    </div>
+                    <div class="trio-opponent-hand" th:if="${entry.value > 0}">
+                        <img th:each="i : ${#numbers.sequence(1, entry.value)}"
+                             class="trio-card-img trio-card-back-small"
+                             th:src="@{/images/cards/card-back.svg}"
+                             alt="Carte cachée"/>
+                    </div>
+                    <div class="trio-seat-actions"
+                         th:if="${entry.value > 0 and distribution.joueurCourant != null and distribution.joueurCourant == distribution.monPseudo}">
+                        <form th:action="@{/games/{id}/moves(id=${partie.id})}" method="post">
+                            <input type="hidden" name="type" value="REVEAL_PLAYER_MIN"/>
+                            <input type="hidden" name="targetPlayerPseudo" th:value="${entry.key}"/>
+                            <button class="btn mini" type="submit" th:text="${'MIN ' + entry.key}">MIN joueur</button>
+                        </form>
+                        <form th:action="@{/games/{id}/moves(id=${partie.id})}" method="post">
+                            <input type="hidden" name="type" value="REVEAL_PLAYER_MAX"/>
+                            <input type="hidden" name="targetPlayerPseudo" th:value="${entry.key}"/>
+                            <button class="btn mini" type="submit" th:text="${'MAX ' + entry.key}">MAX joueur</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trio-table-middle">
+                <div class="trio-opponents trio-side-left" th:if="${distribution.adversaires.size() > 2}">
+                    <div th:each="entry, stat : ${distribution.adversaires}"
+                         th:if="${stat.index >= 2 and stat.index < 4}"
+                         class="trio-seat"
+                         th:classappend="${entry.key == distribution.joueurCourant} ? ' active'">
+                        <div class="trio-seat-name">
+                            <b th:text="${entry.key}">joueur</b>
+                            <span class="badge" th:text="${entry.value + ' carte(s)'}">n</span>
+                        </div>
+                        <div class="trio-opponent-hand" th:if="${entry.value > 0}">
+                            <img th:each="i : ${#numbers.sequence(1, entry.value)}"
+                                 class="trio-card-img trio-card-back-small"
+                                 th:src="@{/images/cards/card-back.svg}"
+                                 alt="Carte cachée"/>
+                        </div>
+                        <div class="trio-seat-actions"
+                             th:if="${entry.value > 0 and distribution.joueurCourant != null and distribution.joueurCourant == distribution.monPseudo}">
+                            <form th:action="@{/games/{id}/moves(id=${partie.id})}" method="post">
+                                <input type="hidden" name="type" value="REVEAL_PLAYER_MIN"/>
+                                <input type="hidden" name="targetPlayerPseudo" th:value="${entry.key}"/>
+                                <button class="btn mini" type="submit" th:text="${'MIN ' + entry.key}">MIN joueur</button>
+                            </form>
+                            <form th:action="@{/games/{id}/moves(id=${partie.id})}" method="post">
+                                <input type="hidden" name="type" value="REVEAL_PLAYER_MAX"/>
+                                <input type="hidden" name="targetPlayerPseudo" th:value="${entry.key}"/>
+                                <button class="btn mini" type="submit" th:text="${'MAX ' + entry.key}">MAX joueur</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="trio-table-center">
+                <div>
+                    <div class="trio-zone-title">Centre</div>
+                    <div class="trio-card-stack" th:if="${distribution.cartesCentre != null and !distribution.cartesCentre.isEmpty()}">
+                        <div th:each="carte : ${distribution.cartesCentre}" class="trio-center-slot">
+                            <form th:if="${!carte.revelee}"
+                              th:action="@{/games/{id}/moves(id=${partie.id})}"
+                              method="post">
+                                <input type="hidden" name="type" value="REVEAL_CENTER"/>
+                                <input type="hidden" name="centerCardId" th:value="${carte.id}"/>
+                                <button class="trio-card-button"
+                                        type="submit"
+                                        th:disabled="${distribution.joueurCourant == null or distribution.joueurCourant != distribution.monPseudo}">
+                                    <img class="trio-card-img" th:src="@{/images/cards/card-back.svg}" alt="Carte cachée du centre"/>
+                                </button>
+                            </form>
+                            <div th:if="${carte.revelee}"
+                                 class="trio-center-revealed">
+                                <img class="trio-card-img"
+                                     th:src="@{/images/cards/card-{value}.svg(value=${carte.valeur})}"
+                                     th:alt="${'Carte ' + carte.valeur}"/>
+                                <div class="trio-card-caption">piochée</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sub" style="text-align:center; margin-top:10px;">
+                        <span th:text="${distribution.nombreCartesCentreCachees + ' carte(s) cachée(s)'}">0 carte</span>
+                    </div>
+                </div>
+
+                <div class="trio-revealed-zone"
+                     th:attr="data-failed-turn-event=${distribution.dernierEvenement}"
+                     th:if="${(distribution.cartesReveleesTour != null and !distribution.cartesReveleesTour.isEmpty()) or (distribution.dernierEvenement != null and #strings.contains(distribution.dernierEvenement, 'Numéros différents'))}">
+                    <div class="trio-zone-title">Révélées</div>
+                    <div th:if="${distribution.dernierEvenement != null and #strings.contains(distribution.dernierEvenement, 'Numéros différents')}"
+                         class="trio-table-warning"
+                         th:text="${distribution.dernierEvenement}">
+                        Mauvaise pioche
+                    </div>
+                    <div class="trio-card-list">
+                        <div th:each="carte : ${distribution.cartesReveleesTour}"
+                             th:if="${distribution.cartesReveleesTour != null and !distribution.cartesReveleesTour.isEmpty()}">
+                            <img class="trio-card-img"
+                                 th:src="@{/images/cards/card-{value}.svg(value=${carte.valeur})}"
+                                 th:alt="${'Carte ' + carte.valeur}"/>
+                            <div class="trio-card-caption" th:text="${carte.libelle}">Source</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+                <div class="trio-opponents trio-side-right" th:if="${distribution.adversaires.size() > 4}">
+                    <div th:each="entry, stat : ${distribution.adversaires}"
+                         th:if="${stat.index >= 4}"
+                         class="trio-seat"
+                         th:classappend="${entry.key == distribution.joueurCourant} ? ' active'">
+                        <div class="trio-seat-name">
+                            <b th:text="${entry.key}">joueur</b>
+                            <span class="badge" th:text="${entry.value + ' carte(s)'}">n</span>
+                        </div>
+                        <div class="trio-opponent-hand" th:if="${entry.value > 0}">
+                            <img th:each="i : ${#numbers.sequence(1, entry.value)}"
+                                 class="trio-card-img trio-card-back-small"
+                                 th:src="@{/images/cards/card-back.svg}"
+                                 alt="Carte cachée"/>
+                        </div>
+                        <div class="trio-seat-actions"
+                             th:if="${entry.value > 0 and distribution.joueurCourant != null and distribution.joueurCourant == distribution.monPseudo}">
+                            <form th:action="@{/games/{id}/moves(id=${partie.id})}" method="post">
+                                <input type="hidden" name="type" value="REVEAL_PLAYER_MIN"/>
+                                <input type="hidden" name="targetPlayerPseudo" th:value="${entry.key}"/>
+                                <button class="btn mini" type="submit" th:text="${'MIN ' + entry.key}">MIN joueur</button>
+                            </form>
+                            <form th:action="@{/games/{id}/moves(id=${partie.id})}" method="post">
+                                <input type="hidden" name="type" value="REVEAL_PLAYER_MAX"/>
+                                <input type="hidden" name="targetPlayerPseudo" th:value="${entry.key}"/>
+                                <button class="btn mini" type="submit" th:text="${'MAX ' + entry.key}">MAX joueur</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trio-my-seat"
+                 th:classappend="${distribution.monPseudo == distribution.joueurCourant} ? ' active'">
+                <div class="trio-seat-name">
+                    <b th:text="${distribution.monPseudo}">Moi</b>
+                    <span class="badge">toi</span>
+                </div>
+                <div th:if="${distribution.maMain != null and !distribution.maMain.isEmpty()}">
+                    <div class="trio-card-list trio-my-hand">
+                        <img th:each="valeur : ${distribution.maMain}"
+                             class="trio-card-img"
+                             th:src="@{/images/cards/card-{value}.svg(value=${valeur})}"
+                             th:alt="${'Carte ' + valeur}"/>
+                    </div>
+                    <div class="trio-seat-actions"
+                         th:if="${distribution.joueurCourant != null and distribution.joueurCourant == distribution.monPseudo}">
+                        <form th:action="@{/games/{id}/moves(id=${partie.id})}" method="post">
+                            <input type="hidden" name="type" value="REVEAL_PLAYER_MIN"/>
+                            <input type="hidden" name="targetPlayerPseudo" th:value="${distribution.monPseudo}"/>
+                            <button class="btn mini" type="submit">MIN moi</button>
+                        </form>
+                        <form th:action="@{/games/{id}/moves(id=${partie.id})}" method="post">
+                            <input type="hidden" name="type" value="REVEAL_PLAYER_MAX"/>
+                            <input type="hidden" name="targetPlayerPseudo" th:value="${distribution.monPseudo}"/>
+                            <button class="btn mini" type="submit">MAX moi</button>
+                        </form>
+                    </div>
+                </div>
+                <div th:if="${distribution.maMain == null or distribution.maMain.isEmpty()}"
+                     class="sub" style="text-align:center;">
+                    Tu n'as plus de cartes en main.
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages de partie -->
+        <div class="trio-table-messages">
+            <div th:if="${trioRemporte}" class="alert trio-success-alert">
+                TRIO remporté ! Valeur : <span th:text="${trioRemporte}"></span>
+            </div>
+            <div th:if="${gagnant}" class="alert trio-win-alert">
+                Partie terminée ! Gagnant : <span th:text="${gagnant}"></span>
+            </div>
+            <div th:if="${echec}" class="alert trio-error-alert">
+                <span th:text="${echec}"></span>
+            </div>
+            <div th:if="${erreur}" class="alert" style="text-align:center;">
+                <span th:text="${erreur}"></span>
+            </div>
+        </div>
+
+        <div class="card trio-trios-card" style="margin-top:14px;">
+            <div class="trio-trios-header">
+                <div>
+                    <div class="h2">Trios gagnés</div>
+                    <div th:if="${partie.variante == 'B'}" class="sub">
+                        En variante B, deux trios sont liés si la liaison est indiquée sur la carte.
+                    </div>
+                </div>
+                <span th:if="${partie.variante == 'B'}" class="badge trio-variant-b-badge">Objectif : 2 liés</span>
+            </div>
+            <div th:if="${distribution != null and distribution.triosParJoueur != null and !distribution.triosParJoueur.isEmpty()}"
+                 class="trio-won-grid">
+                <div th:each="trios : ${distribution.triosParJoueur}"
+                     class="trio-won-row"
+                     th:classappend="${partie.variante == 'B' and trios.hasTriosLies()} ? ' trio-won-row-linked'">
+                    <div class="trio-won-player-line">
+                        <span style="font-weight:800;" th:text="${trios.joueur}">joueur</span>
+                        <span th:if="${partie.variante == 'B' and trios.hasTriosLies()}"
+                              class="badge trio-linked-badge"
+                              th:text="${'Liés : ' + trios.triosLiesLabel}">Liés : 1 et 6</span>
+                    </div>
+                    <div class="trio-card-list" style="justify-content:flex-start;">
+                        <img th:each="valeur : ${trios.valeurs}"
+                             class="trio-card-img trio-card-won"
+                             th:classappend="${partie.variante == 'B' and trios.isValeurLiee(valeur)} ? ' trio-card-linked'"
+                             th:src="@{/images/cards/card-{value}.svg(value=${valeur})}"
+                             th:alt="${'Trio ' + valeur}"/>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${distribution == null or distribution.triosParJoueur == null or distribution.triosParJoueur.isEmpty()}"
+                 class="sub" style="text-align:center;">
+                Aucun trio gagné pour le moment.
+            </div>
+        </div>
+
+        <!-- Pas ton tour -->
+        <div class="card" style="margin-top:14px; text-align:center;"
+             th:if="${distribution != null and (distribution.joueurCourant == null or distribution.joueurCourant != distribution.monPseudo)}">
+            <div class="sub" style="font-size:15px;">
+                ⏳ En attente du tour de <b th:text="${distribution.joueurCourant}">joueur</b>...
+            </div>
+            <div class="sub" style="margin-top:6px;">La page se met à jour automatiquement dès qu'une action est jouée.</div>
+            <a class="btn" style="margin-top:12px; display:inline-block;" th:href="@{/games/{id}(id=${partie.id})}">🔄 Rafraîchir</a>
+        </div>
+
+    </div>
+
+    <!-- TERMINEE -->
+    <div th:if="${partie.statut == 'TERMINEE'}" class="card" style="text-align:center;">
+        <div style="font-size:48px; margin-bottom:10px;">🏆</div>
+        <div class="h2" style="margin-bottom:8px;">Partie terminée !</div>
+        <div th:if="${partie.gagnant != null}" style="font-size:18px; margin-bottom:8px;">
+            Gagnant : <b th:text="${partie.gagnant}"></b>
+        </div>
+        <div th:if="${partie.conditionVictoire != null}" class="sub" style="margin-bottom:18px;">
+            Condition : <span th:text="${partie.conditionVictoire}"></span>
+        </div>
+        <a class="btn primary" th:href="@{/games}">← Retour au Lobby</a>
+    </div>
+
+</div>
+<script th:if="${partie != null and partie.statut != 'TERMINEE'}" th:inline="javascript">
+    (function () {
+        const versionUrl = /*[[@{/games/{id}/state-version(id=${partie.id})}]]*/ "";
+        let currentVersion = null;
+
+        function resolveFailedTurnAfterDelay() {
+            const marker = document.querySelector("[data-failed-turn-event]");
+            const lastEvent = marker ? marker.dataset.failedTurnEvent : "";
+            if (!lastEvent || !lastEvent.includes("Numéros différents")) {
+                return;
+            }
+
+            const storageKey = "trio.failed-turn." + lastEvent;
+            if (sessionStorage.getItem(storageKey) === "seen") {
+                return;
+            }
+
+            window.setTimeout(function () {
+                sessionStorage.setItem(storageKey, "seen");
+                window.location.reload();
+            }, 3000);
+        }
+
+        async function refreshIfChanged() {
+            try {
+                const response = await fetch(versionUrl, {
+                    cache: "no-store",
+                    headers: { "Accept": "text/plain" }
+                });
+                if (!response.ok) {
+                    return;
+                }
+                const nextVersion = await response.text();
+                if (currentVersion === null) {
+                    currentVersion = nextVersion;
+                    return;
+                }
+                if (nextVersion !== currentVersion) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                // Le prochain tick retentera.
+            }
+        }
+
+        resolveFailedTurnAfterDelay();
+        refreshIfChanged();
+        window.setInterval(refreshIfChanged, 1500);
+    })();
+</script>
+</body>
+</html>

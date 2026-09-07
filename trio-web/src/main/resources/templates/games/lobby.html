@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Lobby - Trio')}"></head>
+<body class="trio-ui-theme trio-page trio-games-page">
+
+<main class="trio-shell trio-page-grid">
+<div class="top trio-header">
+    <div class="brand trio-brand">
+        <img class="trio-logo" th:src="@{/images/trio-ui/logo-trio.webp}" alt="Trio"/>
+        <div>
+            <p class="trio-kicker">Salon de jeu</p>
+            <div class="h1">Lobby Trio</div>
+            <div class="sub">
+                <span th:if="${session.PLAYER_PSEUDO != null}">
+                    Bienvenue <b th:text="${session.PLAYER_PSEUDO}">joueur</b>
+                </span>
+                <span th:unless="${session.PLAYER_PSEUDO != null}">Crée ou rejoins une partie</span>
+            </div>
+
+            <div th:if="${param.created}" class="alert trio-message-box">
+                Partie créée : ID <b th:text="${param.created}"></b>
+            </div>
+            <div th:if="${param.joined}" class="alert trio-message-box">
+                Tu as rejoint la partie : ID <b th:text="${param.joined}"></b>
+            </div>
+            <div th:if="${erreur}" class="alert trio-message-box trio-message-box--error" th:text="${erreur}"></div>
+        </div>
+    </div>
+
+    <div class="actions trio-actions">
+        <a class="btn primary" th:href="@{/games/create}">+ Créer une partie</a>
+        <a class="btn" th:href="@{/stats}">Statistiques</a>
+        <a class="btn" th:href="@{/games/finished}">Parties terminées</a>
+        <a class="btn" th:href="@{/logout}">Déconnexion</a>
+    </div>
+</div>
+
+<div th:if="${#lists.isEmpty(games)}" class="card trio-panel">
+    <div class="h2 trio-section-title">Parties disponibles</div>
+    <div class="sub trio-empty-state">
+        <img th:src="@{/images/trio-ui/card-back.webp}" alt="Carte Trio"/>
+        Aucune partie pour l'instant. Crée la première.
+    </div>
+</div>
+
+<div th:replace="~{this :: partiesSection('Rejoindre une partie', 'EN_ATTENTE')}"></div>
+<div th:replace="~{this :: partiesSection('En cours', 'EN_COURS')}"></div>
+<div th:replace="~{this :: partiesSection('Vos parties terminées', 'TERMINEE')}"></div>
+
+<div th:fragment="partiesSection(titre, statut)" class="card trio-panel trio-games-section"
+     th:if="${games.?[statut == #vars.statut].size() > 0}">
+    <div class="h2 trio-section-title" th:text="${titre}">Statut</div>
+
+    <div class="trio-table-wrap">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Variante</th>
+            <th>Statut</th>
+            <th>Créateur</th>
+            <th>Joueurs</th>
+            <th>Accès</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="g : ${games.?[statut == #vars.statut]}">
+            <td th:text="${g.id}">1</td>
+            <td><span class="badge" th:text="${g.variante}">A</span></td>
+            <td th:text="${g.statut}">EN_ATTENTE</td>
+            <td th:text="${g.createur}">alice</td>
+            <td th:text="${g.nombreJoueursActuels + ' / ' + g.nombreJoueursMax}">1 / 4</td>
+            <td>
+                <span class="badge" th:if="${g.partiePrivee}">Privée</span>
+                <span th:unless="${g.partiePrivee}">Publique</span>
+            </td>
+            <td>
+                <form th:if="${#vars.statut == 'EN_ATTENTE'}" th:action="@{/games/{id}/join(id=${g.id})}" method="post"
+                      class="trio-inline-form">
+                    <input th:if="${g.partiePrivee}" type="password" name="motDePasse" placeholder="Mot de passe"
+                           class="trio-password-inline"/>
+                    <button class="btn primary" type="submit">Rejoindre</button>
+                </form>
+                <a th:unless="${#vars.statut == 'EN_ATTENTE'}" class="btn primary" th:href="@{/games/{id}(id=${g.id})}">Voir</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+</main>
+
+<script th:inline="javascript">
+    (function () {
+        const versionUrl = /*[[@{/games/state-version}]]*/ "";
+        let currentVersion = null;
+
+        async function refreshIfChanged() {
+            try {
+                const response = await fetch(versionUrl, {
+                    cache: "no-store",
+                    headers: { "Accept": "text/plain" }
+                });
+                if (!response.ok) {
+                    return;
+                }
+                const nextVersion = await response.text();
+                if (currentVersion === null) {
+                    currentVersion = nextVersion;
+                    return;
+                }
+                if (nextVersion !== currentVersion && !isTypingPassword()) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                // Le prochain tick retentera.
+            }
+        }
+
+        function isTypingPassword() {
+            const active = document.activeElement;
+            return active instanceof HTMLInputElement && active.type === "password";
+        }
+
+        refreshIfChanged();
+        window.setInterval(refreshIfChanged, 1500);
+    })();
+</script>
+
+</body>
+</html>

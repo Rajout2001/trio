@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Statistiques - Trio')}"></head>
+<body class="trio-ui-theme trio-stats-page">
+
+<main class="trio-stats-shell">
+    <div class="top trio-header trio-stats-top">
+        <div class="brand trio-brand">
+            <img class="trio-logo trio-stats-logo" th:src="@{/images/trio-ui/logo-trio.webp}" alt="Trio"/>
+            <div>
+                <p class="trio-stats-kicker">Tableau personnel</p>
+                <div class="h1">Statistiques</div>
+                <div class="sub">
+                    <span th:text="${stats.pseudo}">joueur</span>
+                    <span> - </span>
+                    <span th:text="${stats.email}">email</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions trio-actions">
+            <a class="btn" th:href="@{/games}">Lobby</a>
+            <a class="btn" th:href="@{/games/finished}">Parties terminées</a>
+            <a class="btn" th:href="@{/logout}">Déconnexion</a>
+        </div>
+    </div>
+
+    <div class="trio-stats-layout">
+        <section class="trio-panel trio-stats-hero" aria-labelledby="stats-player-title">
+            <div class="trio-player-panel">
+                <div class="trio-player-avatar">TRIO</div>
+                <div id="stats-player-title" class="h2" th:text="${stats.pseudo}">joueur</div>
+                <div class="sub" th:text="${stats.email}">email</div>
+            </div>
+
+            <div class="trio-stat-summary" aria-label="Bilan personnel">
+                <article class="trio-stat-card trio-stat-card--gold">
+                    <span>Parties jouées</span>
+                    <strong th:text="${stats.partiesJouees}">0</strong>
+                </article>
+                <article class="trio-stat-card">
+                    <span>Victoires</span>
+                    <strong th:text="${stats.victoires}">0</strong>
+                </article>
+            </div>
+        </section>
+
+        <section class="trio-panel trio-stats-table-panel" aria-labelledby="stats-variants-title">
+            <div class="trio-stats-table-header">
+                <div>
+                    <div id="stats-variants-title" class="h2">Par variante</div>
+                    <div class="sub">Bilan détaillé par variante.</div>
+                </div>
+                <span class="badge">Joueur</span>
+            </div>
+
+            <div th:if="${#lists.isEmpty(stats.variantes)}" class="trio-empty-state">
+                <img th:src="@{/images/trio-ui/card-back.webp}" alt="Carte Trio décorative"/>
+                <p>Aucune statistique par variante pour le moment.</p>
+            </div>
+
+            <div class="trio-stats-table-wrap" th:if="${!#lists.isEmpty(stats.variantes)}">
+                <table class="table trio-stats-table">
+                    <thead>
+                    <tr>
+                        <th>Variante</th>
+                        <th>Parties jouées</th>
+                        <th>Victoires</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="variante : ${stats.variantes}">
+                        <td><span class="badge" th:text="${variante.variante}">A</span></td>
+                        <td th:text="${variante.partiesJouees}">0</td>
+                        <td th:text="${variante.victoires}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section th:if="${stats.partiesJouees == 0}" class="trio-panel trio-stats-table-panel">
+            <div class="trio-empty-state">
+                <img th:src="@{/images/trio-ui/card-back.webp}" alt="Carte Trio décorative"/>
+                <p>Les statistiques évolueront après les parties terminées.</p>
+            </div>
+        </section>
+    </div>
+</main>
+
+</body>
+</html>

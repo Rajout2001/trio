@@ -1,0 +1,24 @@
+{
+  "name": "trio-6",
+  "version": "1.0.0",
+  "description": "Ce dépôt contient la stack locale du projet Trio :",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:e2e",
+    "test:e2e": "playwright test --project=chromium",
+    "test:e2e:ui": "playwright test --ui --project=chromium",
+    "test:e2e:headed": "playwright test --project=chromium --headed",
+    "test:e2e:report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://o22508860@pdicost.univ-orleans.fr/git/scm/mmps2/trio-6.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

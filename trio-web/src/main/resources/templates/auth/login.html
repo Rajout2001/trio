@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Connexion - Trio')}"></head>
+<body class="trio-ui-theme trio-page trio-auth-page">
+
+<main class="trio-shell trio-shell--narrow">
+<div class="card trio-panel trio-auth-card">
+    <img class="trio-auth-logo" th:src="@{/images/trio-ui/logo-trio.webp}" alt="Trio"/>
+    <div class="h1 trio-auth-title">Connexion Trio</div>
+
+    <div th:if="${erreur}" class="alert" th:text="${erreur}"></div>
+
+    <form class="form trio-form" th:action="@{/login}" th:object="${loginForm}" method="post">
+        <div class="field">
+            <label>Email</label>
+            <input type="email" th:field="*{email}" placeholder="ex: test@trio.fr"/>
+            <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        </div>
+
+        <div class="field">
+            <label>Mot de passe</label>
+            <input type="password" th:field="*{password}" placeholder="••••••••"/>
+            <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+        </div>
+
+        <button class="btn primary trio-full-button" type="submit">Se connecter</button>
+    </form>
+
+    <div class="sub trio-auth-footer">
+        Pas encore de compte ? <a class="trio-auth-link" th:href="@{/register}">Créer un compte</a>
+    </div>
+</div>
+</main>
+
+</body>
+</html>

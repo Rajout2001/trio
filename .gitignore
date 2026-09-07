@@ -1,0 +1,47 @@
+# OS files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# IDE / editors
+.idea/
+.vscode/
+.metals/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+
+# Node / JS tooling
+node_modules/
+playwright-report/
+playwright/.cache/
+
+# Build / generated artifacts
+**/target/
+**/build/
+*.class
+*.log
+*.jar
+*.war
+*.ear
+
+# Local app data / DB
+data/
+**/data/
+*.db
+*.sqlite
+*.sqlite3
+*.mv.db
+*.trace.db
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local test / scratch files
+*.tmp
+*.bak
+*.orig

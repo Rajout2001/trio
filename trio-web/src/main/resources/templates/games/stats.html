@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Statistiques - Trio')}"></head>
+<body>
+
+<div class="top">
+    <div class="brand">
+        <div class="logo">📊</div>
+        <div>
+            <div class="h1">Statistiques</div>
+            <div class="sub" th:if="${monPseudo != null}">
+                Bonjour <b th:text="${monPseudo}"></b> !
+            </div>
+        </div>
+    </div>
+    <div class="actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn primary" th:href="@{/games}">← Lobby</a>
+        <a class="btn" th:href="@{/logout}">Déconnexion</a>
+    </div>
+</div>
+
+<!-- Stats personnelles -->
+<div class="card" th:if="${monPseudo != null}">
+    <div class="h2" style="margin-bottom:16px;">🎯 Mes statistiques — <span th:text="${monPseudo}"></span></div>
+    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">
+
+        <div style="padding:16px; border-radius:14px; background:rgba(255,204,0,0.25); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${mesParties}">0</div>
+            <div class="sub">Mes parties créées</div>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(0,200,0,0.25); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${mesVictoires}">0</div>
+            <div class="sub">Mes victoires 🏆</div>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(100,100,255,0.2); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${mesPartiesVarianteA}">0</div>
+            <div class="sub">Mes parties Variante A</div>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(255,100,100,0.2); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${mesPartiesVarianteB}">0</div>
+            <div class="sub">Mes parties Variante B</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Stats globales -->
+<div class="card" style="margin-top:14px;">
+    <div class="h2" style="margin-bottom:16px;">📈 Statistiques globales</div>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;">
+
+        <div style="padding:16px; border-radius:14px; background:rgba(255,255,255,0.15); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${totalParties}">0</div>
+            <div class="sub">Total parties</div>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(0,200,0,0.2); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${partiesTerminees}">0</div>
+            <div class="sub">Terminées</div>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(255,200,0,0.2); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${partiesEnCours}">0</div>
+            <div class="sub">En cours</div>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(100,100,255,0.2); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${partiesVarianteA}">0</div>
+            <div class="sub">Variante A</div>
+        </div>
+
+        <div style="padding:16px; border-radius:14px; background:rgba(255,100,100,0.2); text-align:center;">
+            <div style="font-size:36px; font-weight:900;" th:text="${partiesVarianteB}">0</div>
+            <div class="sub">Variante B</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Parties terminées -->
+<div class="card" style="margin-top:14px;">
+    <div class="h2" style="margin-bottom:10px;">🏆 Parties terminées</div>
+
+    <div th:if="${partiesTerminees == 0}" class="sub" style="text-align:center; padding:20px 0;">
+        Aucune partie terminée pour l'instant.
+    </div>
+
+    <table class="table" th:if="${partiesTerminees > 0}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Variante</th>
+            <th>Gagnant</th>
+            <th>Condition</th>
+            <th>Joueurs</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${parties}" th:if="${p.statut == 'TERMINEE'}">
+            <td th:text="${p.id}">1</td>
+            <td><span class="badge" th:text="${p.variante}">A</span></td>
+            <td>
+                <b th:text="${p.gagnant != null ? p.gagnant : 'Aucun'}">-</b>
+                <span th:if="${p.gagnant != null and p.gagnant == monPseudo}"
+                      style="color:var(--gold)"> 🏆 Moi !</span>
+            </td>
+            <td th:text="${p.conditionVictoire != null ? p.conditionVictoire : '-'}">-</td>
+            <td th:text="${p.nombreJoueursMax}">3</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
